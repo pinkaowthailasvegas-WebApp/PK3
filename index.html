@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinkaow 3 - Tips & Time Sheet</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; font-size: 16px; line-height: 1.5; color: #1f2937; }
+        .container { min-height: 100vh; padding-bottom: 128px; }
+        @media (min-width: 768px) { .container { padding: 32px; } }
+        .main-card { max-width: 1200px; margin: 0 auto; background: white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-radius: 12px; overflow: hidden; }
+        
+        .header { background: linear-gradient(to right, #be185d, #9d174d); color: white; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        @media (min-width: 768px) { .header { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .header h1 { font-size: 24px; font-weight: bold; }
+        .date-picker { display: flex; align-items: center; gap: 8px; }
+        .date-input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 8px; color: white; font-size: 16px; }
+        
+        .content { padding: 16px; }
+        @media (min-width: 768px) { .content { padding: 24px; } }
+        .section-spacing { margin-top: 32px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 32px; }
+        @media (min-width: 1024px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+        .section-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 12px; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        thead tr { border-bottom: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #6b7280; }
+        thead th { padding: 8px; font-weight: 600; }
+        tbody tr { border-bottom: 1px solid #f3f4f6; }
+        tbody tr:hover { background-color: #f9fafb; }
+        tbody td { padding: 8px; }
+        tfoot tr { border-top: 2px solid #fce7f3; background-color: #fdf2f8; font-weight: bold; font-size: 14px; }
+        tfoot td { padding: 8px; }
+
+        input[type="text"], input[type="number"], input[type="date"], select { width: 100%; font-size: 16px; }
+        input[type="number"] { text-align: right; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; outline: none; }
+        input[type="text"] { background-color: transparent; border: none; border-bottom: 1px solid #e5e7eb; padding: 8px; outline: none; }
+        input[type="text"]:focus { border-bottom-color: #db2777; }
+        select { font-size: 14px; background-color: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; cursor: pointer; }
+
+        .financial-table .total-row { background-color: #fdf2f8; font-weight: bold; border-top: 1px solid #fbcfe8; border-bottom: 2px solid #fbcfe8; color: #be185d; }
+        .financial-table .separate-row td { color: #6b7280; }
+
+        .breakdown-card { background: linear-gradient(to bottom right, #fdf2f8, #fce7f3); padding: 16px; border-radius: 8px; }
+        .breakdown-title { font-size: 18px; font-weight: bold; color: #be185d; margin-bottom: 12px; }
+        .breakdown-content { display: flex; flex-direction: column; gap: 12px; }
+        .breakdown-row { display: flex; justify-content: space-between; align-items: center; }
+        .breakdown-total { font-size: 20px; font-weight: bold; }
+        .divider { height: 1px; background-color: #fbcfe8; margin: 8px 0; }
+        .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .breakdown-box { display: flex; flex-direction: column; }
+        .breakdown-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+        .breakdown-input-group { display: flex; align-items: center; gap: 4px; }
+        .breakdown-percent-input { width: 55px; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; text-align: center; }
+        .breakdown-value-input, .breakdown-payout-input { width: 100%; text-align: right; background-color: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; font-weight: bold; outline: none; }
+        
+        .pool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background-color: white; padding: 12px; border-radius: 6px; }
+        .pool-item { display: flex; flex-direction: column; }
+        .pool-label { font-size: 11px; color: #6b7280; text-transform: uppercase; }
+        .pool-input-wrapper { display: flex; align-items: center; font-size: 18px; font-weight: bold; }
+        .pool-input { width: 100%; border: none; background: transparent; font-size: 18px; font-weight: bold; outline: none; }
+        .pool-input.cash { color: #15803d; }
+        .pool-input.credit { color: #1d4ed8; }
+
+        .dept-header { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #be185d; }
+        @media (min-width: 768px) { .dept-header { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .dept-header.boh { border-bottom-color: #c2410c; }
+        .dept-title { font-size: 18px; font-weight: bold; color: #be185d; }
+        .dept-title.boh { color: #9a3412; }
+
+        .header-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .inline-add-input { background: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 12px; font-size: 14px; width: 160px !important; }
+
+        .btn { display: inline-flex; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+        .btn-primary { background-color: #db2777; color: white; }
+        .btn-orange { background-color: #ea580c; color: white; }
+        .btn-secondary { background-color: white; color: #4b5563; border: 1px solid #d1d5db; }
+        .btn-success { background-color: #16a34a; color: white; }
+        .btn-print { background-color: #7c3aed; color: white; }
+        .btn-sheets { background-color: #0f9d58; color: white; }
+        .btn-delete { color: #9ca3af; background: none; border: none; cursor: pointer; font-size: 18px; }
+        .btn-delete:hover { color: #ef4444; }
+
+        .quick-select-container { margin-top: 12px; padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; display: none; }
+        .quick-select-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+        .quick-select-btn { padding: 6px 10px; background-color: white; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; cursor: pointer; text-align: left; }
+        .quick-select-btn:hover { background-color: #db2777; color: white; }
+
+        .footer { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+        .footer-buttons { display: flex; gap: 8px; justify-content: flex-end; width: 100%; flex-wrap: wrap; }
+
+        .hours-cell { text-align: center; font-family: monospace; font-size: 14px; }
+        .cash-cell, .credit-cell, .total-cell { text-align: right; font-family: monospace; font-size: 14px; }
+        .total-cell { font-weight: bold; background-color: #fdf2f8; }
+        .boh .total-cell { background-color: #ffedd5; }
+
+        #fallback-report-container { width: 100%; display: none; margin-top: 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; }
+        #fallback-textarea { width: 100%; height: 180px; font-family: monospace; font-size: 13px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white; color: #0f172a; margin-top: 6px; }
+        #print-instruction-banner { display: none; background-color: #fef08a; border: 2px dashed #ca8a04; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; font-size: 14px; text-align: center; }
+
+        body.print-mode-active { background: white !important; color: black !important; padding: 10px !important; }
+        body.print-mode-active .main-card { box-shadow: none !important; border: none !important; max-width: 100% !important; }
+        body.print-mode-active .header { background: #f1f5f9 !important; color: black !important; border-bottom: 2px solid black !important; padding: 12px !important; }
+        body.print-mode-active .date-input { color: black !important; border: none !important; background: transparent !important; font-weight: bold; }
+        body.print-mode-active .header h1 { color: black !important; }
+        body.print-mode-active .header-controls, 
+        body.print-mode-active .btn-delete, 
+        body.print-mode-active #fallback-report-container, 
+        body.print-mode-active .quick-select-container,
+        body.print-mode-active .footer-buttons button:not(.btn-print) { display: none !important; }
+        body.print-mode-active input[type="number"] { background: transparent !important; border: none !important; font-size: 14px !important; color: black !important; font-weight: bold; }
+        body.print-mode-active input[type="text"] { border: none !important; font-weight: bold; color: black !important; }
+        body.print-mode-active select { border: none !important; appearance: none; background: transparent !important; font-size: 14px !important; color: black !important; font-weight: bold; padding: 0 !important; }
+        body.print-mode-active tfoot tr { background: #f1f5f9 !important; border-top: 2px solid black !important; }
+        body.print-mode-active .breakdown-card { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; }
+        body.print-mode-active .pool-grid { background: transparent !important; border: 1px solid #cbd5e1 !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="print-instruction-banner">
+            ⚠️ <strong>PRINT MODE ACTIVE:</strong> Layout optimized cleanly for a portrait page print out. <br/>Now press <strong>Ctrl + P</strong> (or <strong>Cmd + P</strong> on Mac) to send this page straight to your printer!
+        </div>
+
+        <div class="main-card">
+            <div class="header">
+                <h1>Pinkaow 3 - Tips & Time Sheet</h1>
+                <div class="date-picker">
+                    <label>Date:</label>
+                    <input type="date" id="doc-date" class="date-input">
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="grid-2">
+                    <div>
+                        <h3 class="section-title">💲 Tips Input</h3>
+                        <table class="financial-table">
+                            <thead>
+                                <tr><th>Category</th><th style="text-align:right">Cash</th><th style="text-align:right">Credit</th></tr>
+                            </thead>
+                            <tbody id="financial-rows">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="breakdown-card">
+                        <h3 class="breakdown-title">Tip Breakdown</h3>
+                        <div class="breakdown-content">
+                            <div class="breakdown-row">
+                                <span>Total Credit Input</span>
+                                <span class="breakdown-total" id="lbl-total-credit">$0.00</span>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="breakdown-grid">
+                                <div class="breakdown-box">
+                                    <label class="breakdown-label">Kitchen Pot</label>
+                                    <div class="breakdown-input-group">
+                                        <input type="number" class="breakdown-percent-input" id="inp-kitchen-pct" value="10">
+                                        <span style="font-weight:bold">%</span>
+                                    </div>
+                                    <div style="margin-top: 6px;">
+                                        <input type="number" class="breakdown-value-input" id="inp-kitchen-val">
+                                    </div>
+                                </div>
+                                <div class="breakdown-box">
+                                    <label class="breakdown-label">Cashier Payout (90%)</label>
+                                    <div style="margin-top:30px">
+                                        <input type="number" class="breakdown-payout-input" id="inp-cashier-val">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="pool-grid">
+                                <div class="pool-item">
+                                    <span class="pool-label">FOH Cash Pool</span>
+                                    <div class="pool-input-wrapper">$<input type="number" class="pool-input cash" id="inp-foh-cash"></div>
+                                </div>
+                                <div class="pool-item">
+                                    <span class="pool-label">FOH Credit Pool</span>
+                                    <div class="pool-input-wrapper">$<input type="number" class="pool-input credit" id="inp-foh-credit"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOH -->
+                <div class="section-spacing">
+                    <div class="dept-header">
+                        <h3 class="dept-title">👤 Front of House (FOH)</h3>
+                        <div class="header-controls">
+                            <input type="text" class="inline-add-input" id="add-foh-name" placeholder="New Name...">
+                            <button class="btn btn-primary" onclick="handleAddManual('FOH')">Add New</button>
+                            <button class="btn btn-secondary" onclick="toggleRoster('foh')">📋 Roster List</button>
+                        </div>
+                    </div>
+                    <div id="roster-foh" class="quick-select-container">
+                        <div class="quick-select-grid" id="roster-foh-grid"></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Name</th><th>In</th><th>Break</th><th>Back</th><th>Out</th><th style="text-align:center">Hrs</th><th>Role</th><th style="text-align:right">Cash</th><th style="text-align:right">Credit</th><th style="text-align:right">Total</th><th></th></tr>
+                        </thead>
+                        <tbody id="table-foh"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan="5" style="text-align:right; color:#be185d">FOH TOTALS:</td>
+                                <td style="text-align:center" id="foh-total-hrs">0.00</td>
+                                <td colSpan="2"></td>
+                                <td style="text-align:right" id="foh-total-crd">$0.00</td>
+                                <td style="text-align:right; color:#be185d" id="foh-total-all">$0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- BOH -->
+                <div class="section-spacing boh">
+                    <div class="dept-header boh">
+                        <h3 class="dept-title boh">🍳 Back of House (BOH)</h3>
+                        <div class="header-controls">
+                            <input type="text" class="inline-add-input" id="add-boh-name" placeholder="New Name...">
+                            <button class="btn btn-orange" onclick="handleAddManual('BOH')">Add New</button>
+                            <button class="btn btn-secondary" onclick="toggleRoster('boh')">📋 Roster List</button>
+                        </div>
+                    </div>
+                    <div id="roster-boh" class="quick-select-container">
+                        <div class="quick-select-grid" id="roster-boh-grid"></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Name</th><th>In</th><th>Break</th><th>Back</th><th>Out</th><th style="text-align:center">Hrs</th><th>Role</th><th style="text-align:right">Cash</th><th style="text-align:right">Credit</th><th style="text-align:right">Total</th><th></th></tr>
+                        </thead>
+                        <tbody id="table-boh"></tbody>
+                        <tfoot>
+                            <tr style="background:#ffedd5">
+                                <td colSpan="5" style="text-align:right; color:#9a3412">BOH TOTALS:</td>
+                                <td style="text-align:center" id="boh-total-hrs">0.00</td>
+                                <td colSpan="3"></td>
+                                <td style="text-align:right; color:#9a3412" id="boh-total-all">$0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="footer">
+                    <div id="fallback-report-container">
+                        <label style="font-size:13px; font-weight:bold; color:#1e2937">📋 Report Compiled! Click the box below, press Ctrl+A then Ctrl+C to copy:</label>
+                        <textarea id="fallback-textarea" readonly></textarea>
+                    </div>
+                    <div class="footer-buttons">
+                        <button class="btn btn-secondary" onclick="resetForm()">Reset Sheet</button>
+                        <button class="btn btn-success" onclick="buildReport()">Generate Text Report</button>
+                        <button class="btn btn-sheets" id="btn-sheets" onclick="copyToGoogleSheets()">📋 Copy for Google Sheets</button>
+                        <button class="btn btn-print" id="btn-print-toggle" onclick="togglePrintView()">Toggle Print View Mode</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PREDEFINED_FOH = ["Atiya Kanokvattanawan", "Emily Balanay", "JariyaPhon Surinpao", "Omm ChalermSermsri", "Parichat Practice", "Phikul Agsorn", "Photchanicha Khowabut", "Agustina Liu", "Piangjai Peungpakdee", "Saninee Chitamara", "Siriwan Weaver", "Soyvaree Kaewdee", "Suwat Dankratok"].sort();
+        const PREDEFINED_BOH = ["Chalida Miguel", "Chavez Pablo", "Edgar Ramirez", "Hector Mayorga", "Narochol Hompan", "Rocio Cabrera", "Soledad Silva", "Vorawut Chaichawalit", "Yeneth Cetina Chacon"].sort();
+
+        let state = {
+            date: new Date().toISOString().split('T')[0],
+            financials: { lunchCash: 0, lunchCredit: 0, dinnerCash: 0, dinnerCredit: 0, gratuityCash: 0, gratuityCredit: 0, deliveryCash: 0, deliveryCredit: 0, cashierCash: 0, cashierCredit: 0 },
+            kitchenPercent: 10,
+            employees: [],
+            overrides: { kitchenAmount: null, cashierAmount: null, cashPool: null, creditPool: null },
+            printMode: false
+        };
+
+        const STORAGE_KEY = 'PK3_RAW_DATA_PRO';
+        
+        // References for dynamic keys to track calculations nicely
+        const financialCategories = [
+            { label: 'Lunch', cashId: 'lunchCash', creditId: 'lunchCredit' },
+            { label: 'Dinner', cashId: 'dinnerCash', creditId: 'dinnerCredit' },
+            { label: 'Gratuity', cashId: 'gratuityCash', creditId: 'gratuityCredit' },
+            { label: 'Delivery', cashId: 'deliveryCash', creditId: 'deliveryCredit' },
+            { label: 'Cashier', cashId: 'cashierCash', creditId: 'cashierCredit' }
+        ];
+
+        let cachedCalculatedStaff = { foh: [], boh: [] };
+
+        function init() {
+            document.getElementById('doc-date').value = state.date;
+            document.getElementById('doc-date').addEventListener('change', (e) => { state.date = e.target.value; save(); });
+            
+            document.getElementById('inp-kitchen-pct').addEventListener('input', (e) => {
+                state.kitchenPercent = parseFloat(e.target.value || 0);
+                state.overrides.kitchenAmount = null;
+                calculate();
+            });
+            document.getElementById('inp-kitchen-val').addEventListener('input', (e) => { state.overrides.kitchenAmount = e.target.value === '' ? null : e.target.value; calculate(); });
+            document.getElementById('inp-cashier-val').addEventListener('input', (e) => { state.overrides.cashierAmount = e.target.value === '' ? null : e.target.value; calculate(); });
+            document.getElementById('inp-foh-cash').addEventListener('input', (e) => { state.overrides.cashPool = e.target.value === '' ? null : e.target.value; calculate(); });
+            document.getElementById('inp-foh-credit').addEventListener('input', (e) => { state.overrides.creditPool = e.target.value === '' ? null : e.target.value; calculate(); });
+
+            renderFinancials();
+            renderRosters();
+            
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.date) state.date = parsed.date;
+                    if (parsed.financials) state.financials = parsed.financials;
+                    if (parsed.kitchenPercent) state.kitchenPercent = parsed.kitchenPercent;
+                    if (parsed.employees) state.employees = parsed.employees;
+                    if (parsed.overrides) state.overrides = parsed.overrides;
+                    
+                    document.getElementById('doc-date').value = state.date;
+                    document.getElementById('inp-kitchen-pct').value = state.kitchenPercent;
+                } catch(e){}
+            }
+            calculate();
+        }
+
+        function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+        function renderFinancials() {
+            const keys = [
+                ['Lunch', 'lunchCash', 'lunchCredit'],
+                ['Dinner', 'dinnerCash', 'dinnerCredit'],
+                ['Gratuity', 'gratuityCash', 'gratuityCredit'],
+                ['POOL TOTAL', 'poolCash', 'poolCredit', true],
+                ['Delivery', 'deliveryCash', 'deliveryCredit'],
+                ['Cashier', 'cashierCash', 'cashierCredit']
+            ];
+            const tbody = document.getElementById('financial-rows');
+            tbody.innerHTML = '';
+            keys.forEach(([lbl, cKey, crKey, isTotal]) => {
+                const tr = document.createElement('tr');
+                if(isTotal) {
+                    tr.className = 'total-row';
+                    tr.innerHTML = `<td>${lbl}</td><td id="lbl-pool-cash" style="text-align:right">$0.00</td><td id="lbl-pool-credit" style="text-align:right">$0.00</td>`;
+                } else {
+                    if(lbl === 'Delivery' || lbl === 'Cashier') tr.className = 'separate-row';
+                    tr.innerHTML = `
+                        <td style="font-weight:500">${lbl}</td>
+                        <td><input type="number" id="f-${cKey}" value="${state.financials[cKey] || ''}"></td>
+                        <td><input type="number" id="f-${crKey}" value="${state.financials[crKey] || ''}"></td>
+                    `;
+                }
+                tbody.appendChild(tr);
+                if(!isTotal) {
+                    document.getElementById(`f-${cKey}`).addEventListener('input', (e) => { state.financials[cKey] = parseFloat(e.target.value || 0); calculate(); });
+                    document.getElementById(`f-${crKey}`).addEventListener('input', (e) => { state.financials[crKey] = parseFloat(e.target.value || 0); calculate(); });
+                }
+            });
+        }
+
+        function renderRosters() {
+            const fGrid = document.getElementById('roster-foh-grid');
+            fGrid.innerHTML = '';
+            PREDEFINED_FOH.forEach(name => {
+                const b = document.createElement('button'); b.className = 'quick-select-btn'; b.textContent = name;
+                b.onclick = () => { addEmployee(name, 'FOH'); toggleRoster('foh'); };
+                fGrid.appendChild(b);
+            });
+            const bGrid = document.getElementById('roster-boh-grid');
+            bGrid.innerHTML = '';
+            PREDEFINED_BOH.forEach(name => {
+                const b = document.createElement('button'); b.className = 'quick-select-btn'; b.textContent = name;
+                b.onclick = () => { addEmployee(name, 'BOH'); toggleRoster('boh'); };
+                bGrid.appendChild(b);
+            });
+        }
+
+        function toggleRoster(id) {
+            const el = document.getElementById(`roster-${id}`);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function handleAddManual(dept) {
+            const input = document.getElementById(dept === 'FOH' ? 'add-foh-name' : 'add-boh-name');
+            if(input.value.trim()) { addEmployee(input.value.trim(), dept); input.value = ''; }
+        }
+
+        function addEmployee(name, dept) {
+            state.employees.push({
+                id: Date.now() + Math.random(), name, dept, in: '', breakStart: '', breakEnd: '', out: '',
+                role: dept === 'FOH' ? '100%' : 'Kitchen Share'
+            });
+            calculate();
+        }
+
+        function removeEmployee(id) {
+            state.employees = state.employees.filter(e => e.id !== id);
+            calculate();
+        }
+
+        function updateEmpField(id, field, val) {
+            state.employees = state.employees.map(e => e.id === id ? {...e, [field]: val} : e);
+            calculate();
+        }
+
+        function getTimeOptions(selected) {
+            let html = '<option value=""></option>';
+            for (let h = 8; h <= 28; h++) {
+                for (let m = 0; m < 60; m += 15) {
+                    let val = h * 60 + m;
+                    let displayH = h > 12 ? h - 12 : h;
+                    if (h > 24) displayH -= 12;
+                    if (displayH === 0) displayH = 12;
+                    const period = h >= 12 && h < 24 ? 'PM' : 'AM';
+                    let lbl = `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
+                    html += `<option value="${val}" ${parseInt(selected) === val ? 'selected' : ''}>${lbl}</option>`;
+                }
+            }
+            return html;
+        }
+
+        function calculate() {
+            // Re-sync UI element values
+            for(let k in state.financials) {
+                const el = document.getElementById(`f-${k}`);
+                if(el) el.value = state.financials[k] || '';
+            }
+
+            const poolCash = parseFloat(state.financials.lunchCash || 0) + parseFloat(state.financials.dinnerCash || 0) + parseFloat(state.financials.gratuityCash || 0);
+            const poolCredit = parseFloat(state.financials.lunchCredit || 0) + parseFloat(state.financials.dinnerCredit || 0) + parseFloat(state.financials.gratuityCredit || 0);
+            const cashierCredit = parseFloat(state.financials.cashierCredit || 0);
+            const deliveryCredit = parseFloat(state.financials.deliveryCredit || 0);
+
+            const totalCredit = poolCredit + deliveryCredit + cashierCredit;
+
+            const calcKitchen = (poolCredit + cashierCredit) * (state.kitchenPercent / 100);
+            const kitchenTip = state.overrides.kitchenAmount !== null ? parseFloat(state.overrides.kitchenAmount || 0) : calcKitchen;
+
+            const calcCashier = cashierCredit * 0.90;
+            const cashierPayout = state.overrides.cashierAmount !== null ? parseFloat(state.overrides.cashierAmount || 0) : calcCashier;
+
+            const fohCashPool = state.overrides.cashPool !== null ? parseFloat(state.overrides.cashPool || 0) : poolCash;
+            const fohCreditPool = state.overrides.creditPool !== null ? parseFloat(state.overrides.creditPool || 0) : poolCredit * 0.90;
+
+            document.getElementById('lbl-pool-cash').textContent = `$${poolCash.toFixed(2)}`;
+            document.getElementById('lbl-pool-credit').textContent = `$${poolCredit.toFixed(2)}`;
+            document.getElementById('lbl-total-credit').textContent = `$${totalCredit.toFixed(2)}`;
+
+            if(state.overrides.kitchenAmount === null) document.getElementById('inp-kitchen-val').value = kitchenTip.toFixed(2);
+            if(state.overrides.cashierAmount === null) document.getElementById('inp-cashier-val').value = cashierPayout.toFixed(2);
+            if(state.overrides.cashPool === null) document.getElementById('inp-foh-cash').value = fohCashPool.toFixed(2);
+            if(state.overrides.creditPool === null) document.getElementById('inp-foh-credit').value = fohCreditPool.toFixed(2);
+
+            // Compute Employee Hours
+            let processed = state.employees.map(emp => {
+                let hours = 0;
+                if(emp.in && emp.out) {
+                    let diff = parseInt(emp.out) - parseInt(emp.in);
+                    if(emp.breakStart && emp.breakEnd) {
+                        let bDiff = parseInt(emp.breakEnd) - parseInt(emp.breakStart);
+                        if(bDiff > 0) diff -= bDiff;
+                    }
+                    hours = diff > 0 ? diff / 60 : 0;
+                }
+                return {...emp, hours};
+            });
+
+            const fohStaff = processed.filter(e => e.dept === 'FOH');
+            const bohStaff = processed.filter(e => e.dept === 'BOH');
+
+            let fohWeightedHours = 0, fohTotalHours = 0, numCashiers = 0;
+            fohStaff.forEach(e => {
+                fohTotalHours += e.hours;
+                if(e.role === 'Cashier') numCashiers++;
+                else {
+                    const w = e.role === '100%' ? 1.0 : e.role === '75%' ? 0.75 : 0.5;
+                    fohWeightedHours += (e.hours * w);
+                }
+            });
+
+            const cashRate = fohWeightedHours > 0 ? fohCashPool / fohWeightedHours : 0;
+            const creditRate = fohWeightedHours > 0 ? fohCreditPool / fohWeightedHours : 0;
+
+            const finalFoh = fohStaff.map(e => {
+                let cash = 0, credit = 0;
+                if(e.role === 'Cashier') {
+                    credit = numCashiers > 0 ? cashierPayout / numCashiers : 0;
+                } else {
+                    const w = e.role === '100%' ? 1.0 : e.role === '75%' ? 0.75 : 0.5;
+                    cash = e.hours * w * cashRate;
+                    credit = e.hours * w * creditRate;
+                }
+                return {...e, cash, credit, total: cash + credit};
+            });
+
+            let bohTotalHours = 0;
+            bohStaff.forEach(e => { bohTotalHours += e.hours; });
+            const bohRate = bohTotalHours > 0 ? kitchenTip / bohTotalHours : 0;
+
+            const finalBoh = bohStaff.map(e => {
+                let credit = e.hours * bohRate;
+                return {...e, cash: 0, credit, total: credit};
+            });
+
+            // Cache globally for Google Sheets parsing
+            cachedCalculatedStaff.foh = finalFoh;
+            cachedCalculatedStaff.boh = finalBoh;
+
+            // Redraw Tables
+            renderStaffTable('table-foh', finalFoh, 'FOH');
+            renderStaffTable('table-boh', finalBoh, 'BOH');
+
+            document.getElementById('foh-total-hrs').textContent = fohTotalHours.toFixed(2);
+            document.getElementById('foh-total-crd').textContent = `$${finalFoh.reduce((s,e)=>s+e.credit,0).toFixed(2)}`;
+            document.getElementById('foh-total-all').textContent = `$${finalFoh.reduce((s,e)=>s+e.total,0).toFixed(2)}`;
+
+            document.getElementById('boh-total-hrs').textContent = bohTotalHours.toFixed(2);
+            document.getElementById('boh-total-all').textContent = `$${finalBoh.reduce((s,e)=>s+e.total,0).toFixed(2)}`;
+
+            save();
+        }
+
+        function renderStaffTable(targetId, list, dept) {
+            const tbody = document.getElementById(targetId);
+            tbody.innerHTML = '';
+            list.forEach(e => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" value="${e.name}" oninput="updateEmpField(${e.id}, 'name', this.value)"></td>
+                    <td><select onchange="updateEmpField(${e.id}, 'in', this.value)">${getTimeOptions(e.in)}</select></td>
+                    <td><select onchange="updateEmpField(${e.id}, 'breakStart', this.value)">${getTimeOptions(e.breakStart)}</select></td>
+                    <td><select onchange="updateEmpField(${e.id}, 'breakEnd', this.value)">${getTimeOptions(e.breakEnd)}</select></td>
+                    <td><select onchange="updateEmpField(${e.id}, 'out', this.value)">${getTimeOptions(e.out)}</select></td>
+                    <td class="hours-cell">${e.hours > 0 ? e.hours.toFixed(2) : '-'}</td>
+                    <td>
+                        ${dept === 'FOH' ? `
+                        <select onchange="updateEmpField(${e.id}, 'role', this.value)">
+                            <option value="100%" ${e.role==='100%'?'selected':''}>100%</option>
+                            <option value="75%" ${e.role==='75%'?'selected':''}>75%</option>
+                            <option value="50%" ${e.role==='50%'?'selected':''}>50%</option>
+                            <option value="Cashier" ${e.role==='Cashier'?'selected':''}>Cashier</option>
+                        </select>` : '<span style="font-size:13px; color:#6b7280; font-style:italic">Kitchen Share</span>'}
+                    </td>
+                    <td class="cash-cell">${e.cash > 0 ? '$'+e.cash.toFixed(2) : '-'}</td>
+                    <td class="credit-cell">${e.credit > 0 ? '$'+e.credit.toFixed(2) : '-'}</td>
+                    <td class="total-cell">${e.total > 0 ? '$'+e.total.toFixed(2) : '-'}</td>
+                    <td><button class="btn-delete" onclick="removeEmployee(${e.id})">×</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function copyToGoogleSheets() {
+            let rowData = [];
+            const dateStr = state.date;
+            
+            rowData.push(`PINKAOW 3 TIPS & TIMESHEET\tDate:\t${dateStr}`);
+            rowData.push("");
+            
+            rowData.push("TIPS INPUTS\tCash\tCredit");
+            financialCategories.forEach(cat => {
+                const cash = state.financials[cat.cashId] || 0;
+                const credit = state.financials[cat.creditId] || 0;
+                rowData.push(`${cat.label}\t${cash.toFixed(2)}\t${credit.toFixed(2)}`);
+            });
+            rowData.push(""); 
+
+            rowData.push("FRONT OF HOUSE (FOH)\tHours\tRole\tCash Payout\tCredit Payout\tTotal Payout");
+            cachedCalculatedStaff.foh.forEach(e => {
+                rowData.push(`${e.name}\t${e.hours.toFixed(2)}\t${e.role}\t${e.cash.toFixed(2)}\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}`);
+            });
+            
+            const fohTotalHrs = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.hours,0);
+            const fohTotalCrd = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.credit,0);
+            const fohTotalAll = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.total,0);
+            rowData.push(`FOH TOTALS\t${fohTotalHrs.toFixed(2)}\t\t\t${fohTotalCrd.toFixed(2)}\t${fohTotalAll.toFixed(2)}`);
+            rowData.push("");
+
+            rowData.push("BACK OF HOUSE (BOH)\tHours\tRole\tCash Payout\tCredit Payout\tTotal Payout");
+            cachedCalculatedStaff.boh.forEach(e => {
+                rowData.push(`${e.name}\t${e.hours.toFixed(2)}\t${e.role}\t0.00\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}`);
+            });
+            
+            const bohTotalHrs = cachedCalculatedStaff.boh.reduce((s,e)=>s+e.hours,0);
+            const bohTotalAll = cachedCalculatedStaff.boh.reduce((s,e)=>s+e.total,0);
+            rowData.push(`BOH TOTALS\t${bohTotalHrs.toFixed(2)}\t\t0.00\t${bohTotalAll.toFixed(2)}\t${bohTotalAll.toFixed(2)}`);
+
+            const sheetText = rowData.join("\n");
+
+            navigator.clipboard.writeText(sheetText).then(() => {
+                const btn = document.getElementById('btn-sheets');
+                btn.innerText = "✓ Copied! Paste in Sheets App";
+                setTimeout(() => { btn.innerText = "📋 Copy for Google Sheets"; }, 3500);
+            }).catch(() => {
+                alert("Failed to write to clipboard. Try manually copying from the Report Box below.");
+            });
+        }
+
+        function togglePrintView() {
+            const banner = document.getElementById('print-instruction-banner');
+            const btn = document.getElementById('btn-print-toggle');
+            if (state.printMode) {
+                document.body.classList.remove('print-mode-active');
+                if (banner) banner.style.display = 'none';
+                btn.textContent = "Toggle Print View Mode";
+                state.printMode = false;
+            } else {
+                document.body.classList.add('print-mode-active');
+                if (banner) banner.style.display = 'block';
+                btn.textContent = "↩ Return to Edit Mode";
+                state.printMode = true;
+            }
+        }
+
+        function resetForm() {
+            state.employees = [];
+            state.financials = { lunchCash: 0, lunchCredit: 0, dinnerCash: 0, dinnerCredit: 0, gratuityCash: 0, gratuityCredit: 0, deliveryCash: 0, deliveryCredit: 0, cashierCash: 0, cashierCredit: 0 };
+            state.overrides = { kitchenAmount: null, cashierAmount: null, cashPool: null, creditPool: null };
+            document.body.classList.remove('print-mode-active');
+            const banner = document.getElementById('print-instruction-banner');
+            if (banner) banner.style.display = 'none';
+            state.printMode = false;
+            document.getElementById('btn-print-toggle').textContent = "Toggle Print View Mode";
+            document.getElementById('fallback-report-container').style.display = 'none';
+            renderFinancials();
+            calculate();
+        }
+
+        function buildReport() {
+            let log = `=== PINKAOW 3 TIPS & TIMESHEET REPORT ===\nDate: ${state.date}\n\n`;
+            log += `FOH Cash Pool: $${document.getElementById('inp-foh-cash').value}\n`;
+            log += `FOH Credit Pool: $${document.getElementById('inp-foh-credit').value}\n`;
+            log += `Kitchen Share Pot: $${document.getElementById('inp-kitchen-val').value}\n`;
+            
+            const fallbackArea = document.getElementById('fallback-textarea');
+            const fallbackContainer = document.getElementById('fallback-report-container');
+            fallbackArea.value = log;
+            fallbackContainer.style.display = 'block';
+            fallbackArea.focus();
+            fallbackArea.select();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

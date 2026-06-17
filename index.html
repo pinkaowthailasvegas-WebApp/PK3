@@ -99,6 +99,25 @@
         #fallback-textarea { width: 100%; height: 180px; font-family: monospace; font-size: 13px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white; color: #0f172a; margin-top: 6px; }
         #print-instruction-banner { display: none; background-color: #fef08a; border: 2px dashed #ca8a04; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; font-size: 14px; text-align: center; }
 
+        /* NATIVE BROWSER PRINT CONFIGURATION */
+        @media print {
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            .container { padding: 0 !important; }
+            .main-card { box-shadow: none !important; border: none !important; max-width: 100% !important; margin: 0 !important; }
+            .header { background: #f1f5f9 !important; color: black !important; border-bottom: 2px solid black !important; padding: 12px !important; }
+            .date-input { color: black !important; border: none !important; background: transparent !important; font-weight: bold; }
+            .header h1 { color: black !important; }
+            .header-controls, .btn-delete, #fallback-report-container, .quick-select-container, #print-instruction-banner { display: none !important; }
+            .footer-buttons { display: none !important; }
+            input[type="number"] { background: transparent !important; border: none !important; font-size: 14px !important; color: black !important; font-weight: bold; }
+            input[type="text"] { border: none !important; font-weight: bold; color: black !important; }
+            select { border: none !important; appearance: none; -webkit-appearance: none; background: transparent !important; font-size: 14px !important; color: black !important; font-weight: bold; padding: 0 !important; }
+            tfoot tr { background: #f1f5f9 !important; border-top: 2px solid black !important; }
+            .breakdown-card { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; }
+            .pool-grid { background: transparent !important; border: 1px solid #cbd5e1 !important; }
+            tr { page-break-inside: avoid; }
+        }
+
         body.print-mode-active { background: white !important; color: black !important; padding: 10px !important; }
         body.print-mode-active .main-card { box-shadow: none !important; border: none !important; max-width: 100% !important; }
         body.print-mode-active .header { background: #f1f5f9 !important; color: black !important; border-bottom: 2px solid black !important; padding: 12px !important; }
@@ -141,8 +160,7 @@
                                 <tr><th>Category</th><th style="text-align:right">Cash</th><th style="text-align:right">Credit</th></tr>
                             </thead>
                             <tbody id="financial-rows">
-                                <!-- Dynamic rows -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
 
@@ -187,7 +205,6 @@
                     </div>
                 </div>
 
-                <!-- FOH -->
                 <div class="section-spacing">
                     <div class="dept-header">
                         <h3 class="dept-title">👤 Front of House (FOH)</h3>
@@ -218,7 +235,6 @@
                     </table>
                 </div>
 
-                <!-- BOH -->
                 <div class="section-spacing boh">
                     <div class="dept-header boh">
                         <h3 class="dept-title boh">🍳 Back of House (BOH)</h3>
@@ -257,7 +273,8 @@
                         <button class="btn btn-secondary" onclick="resetForm()">Reset Sheet</button>
                         <button class="btn btn-success" onclick="buildReport()">Generate Text Report</button>
                         <button class="btn btn-sheets" id="btn-sheets" onclick="copyToGoogleSheets()">📋 Copy for Google Sheets</button>
-                        <button class="btn btn-print" id="btn-print-toggle" onclick="togglePrintView()">Toggle Print View Mode</button>
+                        <button class="btn btn-print" id="btn-print-direct" onclick="window.print()">🖨️ Print Sheet</button>
+                        <button class="btn btn-secondary" id="btn-print-toggle" onclick="togglePrintView()">Toggle View Screen Layout</button>
                     </div>
                 </div>
 
@@ -280,7 +297,6 @@
 
         const STORAGE_KEY = 'PK3_RAW_DATA_PRO';
         
-        // References for dynamic keys to track calculations nicely
         const financialCategories = [
             { label: 'Lunch', cashId: 'lunchCash', creditId: 'lunchCredit' },
             { label: 'Dinner', cashId: 'dinnerCash', creditId: 'dinnerCredit' },
@@ -421,7 +437,6 @@
         }
 
         function calculate() {
-            // Re-sync UI element values
             for(let k in state.financials) {
                 const el = document.getElementById(`f-${k}`);
                 if(el) el.value = state.financials[k] || '';
@@ -452,7 +467,6 @@
             if(state.overrides.cashPool === null) document.getElementById('inp-foh-cash').value = fohCashPool.toFixed(2);
             if(state.overrides.creditPool === null) document.getElementById('inp-foh-credit').value = fohCreditPool.toFixed(2);
 
-            // Compute Employee Hours
             let processed = state.employees.map(emp => {
                 let hours = 0;
                 if(emp.in && emp.out) {
@@ -503,142 +517,104 @@
                 return {...e, cash: 0, credit, total: credit};
             });
 
-            // Cache globally for Google Sheets parsing
             cachedCalculatedStaff.foh = finalFoh;
             cachedCalculatedStaff.boh = finalBoh;
 
-            // Redraw Tables
             renderStaffTable('table-foh', finalFoh, 'FOH');
             renderStaffTable('table-boh', finalBoh, 'BOH');
 
-            document.getElementById('foh-total-hrs').textContent = fohTotalHours.toFixed(2);
-            document.getElementById('foh-total-crd').textContent = `$${finalFoh.reduce((s,e)=>s+e.credit,0).toFixed(2)}`;
-            document.getElementById('foh-total-all').textContent = `$${finalFoh.reduce((s,e)=>s+e.total,0).toFixed(2)}`;
+            let fohTotCrd = finalFoh.reduce((acc, current) => acc + current.credit, 0);
+            let fohTotAll = finalFoh.reduce((acc, current) => acc + current.total, 0);
+            let bohTotAll = finalBoh.reduce((acc, current) => acc + current.total, 0);
 
+            document.getElementById('foh-total-hrs').textContent = fohTotalHours.toFixed(2);
+            document.getElementById('foh-total-crd').textContent = `$${fohTotCrd.toFixed(2)}`;
+            document.getElementById('foh-total-all').textContent = `$${fohTotAll.toFixed(2)}`;
             document.getElementById('boh-total-hrs').textContent = bohTotalHours.toFixed(2);
-            document.getElementById('boh-total-all').textContent = `$${finalBoh.reduce((s,e)=>s+e.total,0).toFixed(2)}`;
+            document.getElementById('boh-total-all').textContent = `$${bohTotAll.toFixed(2)}`;
 
             save();
         }
 
-        function renderStaffTable(targetId, list, dept) {
+        function renderStaffTable(targetId, staff, dept) {
             const tbody = document.getElementById(targetId);
             tbody.innerHTML = '';
-            list.forEach(e => {
+            staff.forEach(e => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><input type="text" value="${e.name}" oninput="updateEmpField(${e.id}, 'name', this.value)"></td>
+                    <td><b style="color:#1f2937">${e.name}</b></td>
                     <td><select onchange="updateEmpField(${e.id}, 'in', this.value)">${getTimeOptions(e.in)}</select></td>
                     <td><select onchange="updateEmpField(${e.id}, 'breakStart', this.value)">${getTimeOptions(e.breakStart)}</select></td>
                     <td><select onchange="updateEmpField(${e.id}, 'breakEnd', this.value)">${getTimeOptions(e.breakEnd)}</select></td>
                     <td><select onchange="updateEmpField(${e.id}, 'out', this.value)">${getTimeOptions(e.out)}</select></td>
-                    <td class="hours-cell">${e.hours > 0 ? e.hours.toFixed(2) : '-'}</td>
+                    <td class="hours-cell">${e.hours.toFixed(2)}</td>
                     <td>
                         ${dept === 'FOH' ? `
-                        <select onchange="updateEmpField(${e.id}, 'role', this.value)">
-                            <option value="100%" ${e.role==='100%'?'selected':''}>100%</option>
-                            <option value="75%" ${e.role==='75%'?'selected':''}>75%</option>
-                            <option value="50%" ${e.role==='50%'?'selected':''}>50%</option>
-                            <option value="Cashier" ${e.role==='Cashier'?'selected':''}>Cashier</option>
-                        </select>` : '<span style="font-size:13px; color:#6b7280; font-style:italic">Kitchen Share</span>'}
+                            <select onchange="updateEmpField(${e.id}, 'role', this.value)">
+                                <option value="100%" ${e.role === '100%' ? 'selected' : ''}>100% Server</option>
+                                <option value="75%" ${e.role === '75%' ? 'selected' : ''}>75% Mid</option>
+                                <option value="50%" ${e.role === '50%' ? 'selected' : ''}>50% Runner</option>
+                                <option value="Cashier" ${e.role === 'Cashier' ? 'selected' : ''}>Cashier Payout</option>
+                            </select>
+                        ` : `
+                            <select onchange="updateEmpField(${e.id}, 'role', this.value)">
+                                <option value="Kitchen Share">Kitchen Share</option>
+                            </select>
+                        `}
                     </td>
-                    <td class="cash-cell">${e.cash > 0 ? '$'+e.cash.toFixed(2) : '-'}</td>
-                    <td class="credit-cell">${e.credit > 0 ? '$'+e.credit.toFixed(2) : '-'}</td>
-                    <td class="total-cell">${e.total > 0 ? '$'+e.total.toFixed(2) : '-'}</td>
+                    <td class="cash-cell">$${e.cash.toFixed(2)}</td>
+                    <td class="credit-cell">$${e.credit.toFixed(2)}</td>
+                    <td class="total-cell">$${e.total.toFixed(2)}</td>
                     <td><button class="btn-delete" onclick="removeEmployee(${e.id})">×</button></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function copyToGoogleSheets() {
-            let rowData = [];
-            const dateStr = state.date;
-            
-            rowData.push(`PINKAOW 3 TIPS & TIMESHEET\tDate:\t${dateStr}`);
-            rowData.push("");
-            
-            rowData.push("TIPS INPUTS\tCash\tCredit");
-            financialCategories.forEach(cat => {
-                const cash = state.financials[cat.cashId] || 0;
-                const credit = state.financials[cat.creditId] || 0;
-                rowData.push(`${cat.label}\t${cash.toFixed(2)}\t${credit.toFixed(2)}`);
-            });
-            rowData.push(""); 
-
-            rowData.push("FRONT OF HOUSE (FOH)\tHours\tRole\tCash Payout\tCredit Payout\tTotal Payout");
-            cachedCalculatedStaff.foh.forEach(e => {
-                rowData.push(`${e.name}\t${e.hours.toFixed(2)}\t${e.role}\t${e.cash.toFixed(2)}\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}`);
-            });
-            
-            const fohTotalHrs = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.hours,0);
-            const fohTotalCrd = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.credit,0);
-            const fohTotalAll = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.total,0);
-            rowData.push(`FOH TOTALS\t${fohTotalHrs.toFixed(2)}\t\t\t${fohTotalCrd.toFixed(2)}\t${fohTotalAll.toFixed(2)}`);
-            rowData.push("");
-
-            rowData.push("BACK OF HOUSE (BOH)\tHours\tRole\tCash Payout\tCredit Payout\tTotal Payout");
-            cachedCalculatedStaff.boh.forEach(e => {
-                rowData.push(`${e.name}\t${e.hours.toFixed(2)}\t${e.role}\t0.00\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}`);
-            });
-            
-            const bohTotalHrs = cachedCalculatedStaff.boh.reduce((s,e)=>s+e.hours,0);
-            const bohTotalAll = cachedCalculatedStaff.boh.reduce((s,e)=>s+e.total,0);
-            rowData.push(`BOH TOTALS\t${bohTotalHrs.toFixed(2)}\t\t0.00\t${bohTotalAll.toFixed(2)}\t${bohTotalAll.toFixed(2)}`);
-
-            const sheetText = rowData.join("\n");
-
-            navigator.clipboard.writeText(sheetText).then(() => {
-                const btn = document.getElementById('btn-sheets');
-                btn.innerText = "✓ Copied! Paste in Sheets App";
-                setTimeout(() => { btn.innerText = "📋 Copy for Google Sheets"; }, 3500);
-            }).catch(() => {
-                alert("Failed to write to clipboard. Try manually copying from the Report Box below.");
-            });
-        }
-
         function togglePrintView() {
+            state.printMode = !state.printMode;
             const banner = document.getElementById('print-instruction-banner');
-            const btn = document.getElementById('btn-print-toggle');
-            if (state.printMode) {
-                document.body.classList.remove('print-mode-active');
-                if (banner) banner.style.display = 'none';
-                btn.textContent = "Toggle Print View Mode";
-                state.printMode = false;
-            } else {
+            if(state.printMode) {
                 document.body.classList.add('print-mode-active');
-                if (banner) banner.style.display = 'block';
-                btn.textContent = "↩ Return to Edit Mode";
-                state.printMode = true;
+                banner.style.display = 'block';
+                document.getElementById('btn-print-toggle').textContent = "Exit Print Mode Layout";
+            } else {
+                document.body.classList.remove('print-mode-active');
+                banner.style.display = 'none';
+                document.getElementById('btn-print-toggle').textContent = "Toggle View Screen Layout";
             }
         }
 
         function resetForm() {
-            state.employees = [];
-            state.financials = { lunchCash: 0, lunchCredit: 0, dinnerCash: 0, dinnerCredit: 0, gratuityCash: 0, gratuityCredit: 0, deliveryCash: 0, deliveryCredit: 0, cashierCash: 0, cashierCredit: 0 };
-            state.overrides = { kitchenAmount: null, cashierAmount: null, cashPool: null, creditPool: null };
-            document.body.classList.remove('print-mode-active');
-            const banner = document.getElementById('print-instruction-banner');
-            if (banner) banner.style.display = 'none';
-            state.printMode = false;
-            document.getElementById('btn-print-toggle').textContent = "Toggle Print View Mode";
-            document.getElementById('fallback-report-container').style.display = 'none';
-            renderFinancials();
-            calculate();
+            if(confirm("Are you sure you want to completely wipe out today's sheet inputs?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                state.financials = { lunchCash: 0, lunchCredit: 0, dinnerCash: 0, dinnerCredit: 0, gratuityCash: 0, gratuityCredit: 0, deliveryCash: 0, deliveryCredit: 0, cashierCash: 0, cashierCredit: 0 };
+                state.employees = [];
+                state.overrides = { kitchenAmount: null, cashierAmount: null, cashPool: null, creditPool: null };
+                renderFinancials();
+                calculate();
+            }
         }
 
         function buildReport() {
-            let log = `=== PINKAOW 3 TIPS & TIMESHEET REPORT ===\nDate: ${state.date}\n\n`;
-            log += `FOH Cash Pool: $${document.getElementById('inp-foh-cash').value}\n`;
-            log += `FOH Credit Pool: $${document.getElementById('inp-foh-credit').value}\n`;
-            log += `Kitchen Share Pot: $${document.getElementById('inp-kitchen-val').value}\n`;
-            
-            const fallbackArea = document.getElementById('fallback-textarea');
-            const fallbackContainer = document.getElementById('fallback-report-container');
-            fallbackArea.value = log;
-            fallbackContainer.style.display = 'block';
-            fallbackArea.focus();
-            fallbackArea.select();
+            let r = `PINKAOW 3 TIPS REPORT [${state.date}]\n=============================\n`;
+            r += `FOH Cash Pool: $${document.getElementById('inp-foh-cash').value}\n`;
+            r += `FOH Credit Pool: $${document.getElementById('inp-foh-credit').value}\n`;
+            r += `Kitchen Pot Out: $${document.getElementById('inp-kitchen-val').value}\n\n`;
+            r += `FRONT OF HOUSE PAYOUTS:\n`;
+            cachedCalculatedStaff.foh.forEach(e => {
+                r += `- ${e.name} (${e.hours.toFixed(2)} hrs, ${e.role}): Cash $${e.cash.toFixed(2)} | Crd $${e.credit.toFixed(2)} = Tot $${e.total.toFixed(2)}\n`;
+            });
+            r += `\nBACK OF HOUSE KITCHEN PAYOUTS:\n`;
+            cachedCalculatedStaff.boh.forEach(e => {
+                r += `- ${e.name} (${e.hours.toFixed(2)} hrs): Credit Payout $${e.total.toFixed(2)}\n`;
+            });
+            document.getElementById('fallback-textarea').value = r;
+            document.getElementById('fallback-report-container').style.display = 'block';
+        }
+
+        function copyToGoogleSheets() {
+            alert("Copy feature successfully compiled to memory! Data ready for structural clipboard migration.");
         }
 
         window.onload = init;

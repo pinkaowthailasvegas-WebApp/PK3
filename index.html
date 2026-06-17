@@ -97,32 +97,114 @@
 
         #fallback-report-container { width: 100%; display: none; margin-top: 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; }
         #fallback-textarea { width: 100%; height: 180px; font-family: monospace; font-size: 13px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white; color: #0f172a; margin-top: 6px; }
-        #print-instruction-banner { display: none; background-color: #fef08a; border: 2px dashed #ca8a04; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; font-size: 14px; text-align: center; }
 
-        body.print-mode-active { background: white !important; color: black !important; padding: 10px !important; }
-        body.print-mode-active .main-card { box-shadow: none !important; border: none !important; max-width: 100% !important; }
-        body.print-mode-active .header { background: #f1f5f9 !important; color: black !important; border-bottom: 2px solid black !important; padding: 12px !important; }
-        body.print-mode-active .date-input { color: black !important; border: none !important; background: transparent !important; font-weight: bold; }
-        body.print-mode-active .header h1 { color: black !important; }
-        body.print-mode-active .header-controls, 
-        body.print-mode-active .btn-delete, 
-        body.print-mode-active #fallback-report-container, 
-        body.print-mode-active .quick-select-container,
-        body.print-mode-active .footer-buttons button:not(.btn-print) { display: none !important; }
-        body.print-mode-active input[type="number"] { background: transparent !important; border: none !important; font-size: 14px !important; color: black !important; font-weight: bold; }
-        body.print-mode-active input[type="text"] { border: none !important; font-weight: bold; color: black !important; }
-        body.print-mode-active select { border: none !important; appearance: none; background: transparent !important; font-size: 14px !important; color: black !important; font-weight: bold; padding: 0 !important; }
-        body.print-mode-active tfoot tr { background: #f1f5f9 !important; border-top: 2px solid black !important; }
-        body.print-mode-active .breakdown-card { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; }
-        body.print-mode-active .pool-grid { background: transparent !important; border: 1px solid #cbd5e1 !important; }
+        /* ================= iPad AirPrint / 1-Page Optimization ================= */
+        @media print {
+            @page {
+                size: portrait;
+                margin: 0.25in;
+            }
+            html, body {
+                background: white !important;
+                color: black !important;
+                font-size: 11px !important; /* Forces compact font rendering to fit on one page */
+                width: 100%;
+                height: 100%;
+            }
+            .container {
+                padding: 0 !important;
+                min-height: auto !important;
+            }
+            .main-card {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                background: transparent !important;
+            }
+            .header {
+                background: #f1f5f9 !important;
+                color: black !important;
+                border-bottom: 2px solid black !important;
+                padding: 8px !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            .header h1 {
+                color: black !important;
+                font-size: 18px !important;
+            }
+            .date-input {
+                color: black !important;
+                border: none !important;
+                background: transparent !important;
+                font-weight: bold;
+                font-size: 13px !important;
+                padding: 0 !important;
+            }
+            /* Lock side-by-side structures inline instead of stacking */
+            .grid-2 {
+                display: grid !important;
+                grid-template-columns: 1.1fr 0.9fr !important;
+                gap: 16px !important;
+            }
+            .section-spacing {
+                margin-top: 16px !important;
+                page-break-inside: avoid !important;
+            }
+            /* Clean structural components */
+            table {
+                width: 100% !important;
+                page-break-inside: avoid !important;
+            }
+            tr {
+                page-break-inside: avoid !important;
+            }
+            th, td {
+                padding: 4px !important; /* Tighter padding for 1 page restriction */
+            }
+            /* Form Inputs Reset for Native Aesthetics */
+            input[type="number"], input[type="text"], select {
+                background: transparent !important;
+                border: none !important;
+                font-size: 11px !important;
+                color: black !important;
+                font-weight: bold;
+                padding: 2px 0 !important;
+                text-align: inherit;
+                -webkit-appearance: none; /* Strip iPad Safari default styling */
+                appearance: none;
+            }
+            .breakdown-card {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 10px !important;
+            }
+            .pool-grid {
+                background: white !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px !important;
+            }
+            tfoot tr {
+                background: #f8fafc !important;
+                border-top: 1px solid black !important;
+            }
+            /* Absolute Hidden controls on AirPrint layout */
+            .header-controls, 
+            .btn-delete, 
+            .btn-delete-cell,
+            td:last-child, 
+            th:last-child,
+            #fallback-report-container, 
+            .quick-select-container, 
+            .footer-buttons {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="print-instruction-banner">
-            ⚠️ <strong>PRINT MODE ACTIVE:</strong> Layout optimized cleanly for a portrait page print out. <br/>Now press <strong>Ctrl + P</strong> (or <strong>Cmd + P</strong> on Mac) to send this page straight to your printer!
-        </div>
-
         <div class="main-card">
             <div class="header">
                 <h1>Pinkaow 3 - Tips & Time Sheet</h1>
@@ -257,7 +339,7 @@
                         <button class="btn btn-secondary" onclick="resetForm()">Reset Sheet</button>
                         <button class="btn btn-success" onclick="buildReport()">Generate Text Report</button>
                         <button class="btn btn-sheets" id="btn-sheets" onclick="copyToGoogleSheets()">📋 Copy for Google Sheets</button>
-                        <button class="btn btn-print" id="btn-print-toggle" onclick="togglePrintView()">Toggle Print View Mode</button>
+                        <button class="btn btn-print" id="btn-print" onclick="window.print()">Print Sheet</button>
                     </div>
                 </div>
 
@@ -274,13 +356,11 @@
             financials: { lunchCash: 0, lunchCredit: 0, dinnerCash: 0, dinnerCredit: 0, gratuityCash: 0, gratuityCredit: 0, deliveryCash: 0, deliveryCredit: 0, cashierCash: 0, cashierCredit: 0 },
             kitchenPercent: 10,
             employees: [],
-            overrides: { kitchenAmount: null, cashierAmount: null, cashPool: null, creditPool: null },
-            printMode: false
+            overrides: { kitchenAmount: null, cashierAmount: null, cashPool: null, creditPool: null }
         };
 
         const STORAGE_KEY = 'PK3_RAW_DATA_PRO';
         
-        // References for dynamic keys to track calculations nicely
         const financialCategories = [
             { label: 'Lunch', cashId: 'lunchCash', creditId: 'lunchCredit' },
             { label: 'Dinner', cashId: 'dinnerCash', creditId: 'dinnerCredit' },
@@ -421,7 +501,6 @@
         }
 
         function calculate() {
-            // Re-sync UI element values
             for(let k in state.financials) {
                 const el = document.getElementById(`f-${k}`);
                 if(el) el.value = state.financials[k] || '';
@@ -452,7 +531,6 @@
             if(state.overrides.cashPool === null) document.getElementById('inp-foh-cash').value = fohCashPool.toFixed(2);
             if(state.overrides.creditPool === null) document.getElementById('inp-foh-credit').value = fohCreditPool.toFixed(2);
 
-            // Compute Employee Hours
             let processed = state.employees.map(emp => {
                 let hours = 0;
                 if(emp.in && emp.out) {
@@ -503,11 +581,9 @@
                 return {...e, cash: 0, credit, total: credit};
             });
 
-            // Cache globally for Google Sheets parsing
             cachedCalculatedStaff.foh = finalFoh;
             cachedCalculatedStaff.boh = finalBoh;
 
-            // Redraw Tables
             renderStaffTable('table-foh', finalFoh, 'FOH');
             renderStaffTable('table-boh', finalBoh, 'BOH');
 
@@ -545,100 +621,50 @@
                     <td class="cash-cell">${e.cash > 0 ? '$'+e.cash.toFixed(2) : '-'}</td>
                     <td class="credit-cell">${e.credit > 0 ? '$'+e.credit.toFixed(2) : '-'}</td>
                     <td class="total-cell">${e.total > 0 ? '$'+e.total.toFixed(2) : '-'}</td>
-                    <td><button class="btn-delete" onclick="removeEmployee(${e.id})">×</button></td>
+                    <td class="btn-delete-cell"><button class="btn-delete" onclick="removeEmployee(${e.id})">×</button></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function copyToGoogleSheets() {
-            let rowData = [];
-            const dateStr = state.date;
-            
-            rowData.push(`PINKAOW 3 TIPS & TIMESHEET\tDate:\t${dateStr}`);
-            rowData.push("");
-            
-            rowData.push("TIPS INPUTS\tCash\tCredit");
-            financialCategories.forEach(cat => {
-                const cash = state.financials[cat.cashId] || 0;
-                const credit = state.financials[cat.creditId] || 0;
-                rowData.push(`${cat.label}\t${cash.toFixed(2)}\t${credit.toFixed(2)}`);
-            });
-            rowData.push(""); 
-
-            rowData.push("FRONT OF HOUSE (FOH)\tHours\tRole\tCash Payout\tCredit Payout\tTotal Payout");
-            cachedCalculatedStaff.foh.forEach(e => {
-                rowData.push(`${e.name}\t${e.hours.toFixed(2)}\t${e.role}\t${e.cash.toFixed(2)}\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}`);
-            });
-            
-            const fohTotalHrs = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.hours,0);
-            const fohTotalCrd = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.credit,0);
-            const fohTotalAll = cachedCalculatedStaff.foh.reduce((s,e)=>s+e.total,0);
-            rowData.push(`FOH TOTALS\t${fohTotalHrs.toFixed(2)}\t\t\t${fohTotalCrd.toFixed(2)}\t${fohTotalAll.toFixed(2)}`);
-            rowData.push("");
-
-            rowData.push("BACK OF HOUSE (BOH)\tHours\tRole\tCash Payout\tCredit Payout\tTotal Payout");
-            cachedCalculatedStaff.boh.forEach(e => {
-                rowData.push(`${e.name}\t${e.hours.toFixed(2)}\t${e.role}\t0.00\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}`);
-            });
-            
-            const bohTotalHrs = cachedCalculatedStaff.boh.reduce((s,e)=>s+e.hours,0);
-            const bohTotalAll = cachedCalculatedStaff.boh.reduce((s,e)=>s+e.total,0);
-            rowData.push(`BOH TOTALS\t${bohTotalHrs.toFixed(2)}\t\t0.00\t${bohTotalAll.toFixed(2)}\t${bohTotalAll.toFixed(2)}`);
-
-            const sheetText = rowData.join("\n");
-
-            navigator.clipboard.writeText(sheetText).then(() => {
-                const btn = document.getElementById('btn-sheets');
-                btn.innerText = "✓ Copied! Paste in Sheets App";
-                setTimeout(() => { btn.innerText = "📋 Copy for Google Sheets"; }, 3500);
-            }).catch(() => {
-                alert("Failed to write to clipboard. Try manually copying from the Report Box below.");
-            });
-        }
-
-        function togglePrintView() {
-            const banner = document.getElementById('print-instruction-banner');
-            const btn = document.getElementById('btn-print-toggle');
-            if (state.printMode) {
-                document.body.classList.remove('print-mode-active');
-                if (banner) banner.style.display = 'none';
-                btn.textContent = "Toggle Print View Mode";
-                state.printMode = false;
-            } else {
-                document.body.classList.add('print-mode-active');
-                if (banner) banner.style.display = 'block';
-                btn.textContent = "↩ Return to Edit Mode";
-                state.printMode = true;
+        function resetForm() {
+            if(confirm("Are you sure you want to completely clear today's sheet?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
             }
         }
 
-        function resetForm() {
-            state.employees = [];
-            state.financials = { lunchCash: 0, lunchCredit: 0, dinnerCash: 0, dinnerCredit: 0, gratuityCash: 0, gratuityCredit: 0, deliveryCash: 0, deliveryCredit: 0, cashierCash: 0, cashierCredit: 0 };
-            state.overrides = { kitchenAmount: null, cashierAmount: null, cashPool: null, creditPool: null };
-            document.body.classList.remove('print-mode-active');
-            const banner = document.getElementById('print-instruction-banner');
-            if (banner) banner.style.display = 'none';
-            state.printMode = false;
-            document.getElementById('btn-print-toggle').textContent = "Toggle Print View Mode";
-            document.getElementById('fallback-report-container').style.display = 'none';
-            renderFinancials();
-            calculate();
+        function buildReport() {
+            let r = `PINKAOW 3 TIPS REPORT - ${state.date}\n===============================\n`;
+            r += `FOH Cash Pool: $${document.getElementById('inp-foh-cash').value}\n`;
+            r += `FOH Credit Pool: $${document.getElementById('inp-foh-credit').value}\n`;
+            r += `Kitchen Pot Total: $${document.getElementById('inp-kitchen-val').value}\n\n`;
+            
+            r += `FRONT OF HOUSE DISTRIBUTIONS:\n`;
+            cachedCalculatedStaff.foh.forEach(e => {
+                r += `- ${e.name} (${e.role}, ${e.hours.toFixed(2)} hrs): Cash: $${e.cash.toFixed(2)} | Credit: $${e.credit.toFixed(2)} | Total: $${e.total.toFixed(2)}\n`;
+            });
+            r += `\nBACK OF HOUSE DISTRIBUTIONS:\n`;
+            cachedCalculatedStaff.boh.forEach(e => {
+                r += `- ${e.name} (${e.hours.toFixed(2)} hrs): Credit: $${e.credit.toFixed(2)}\n`;
+            });
+            
+            document.getElementById('fallback-textarea').value = r;
+            document.getElementById('fallback-report-container').style.display = 'block';
         }
 
-        function buildReport() {
-            let log = `=== PINKAOW 3 TIPS & TIMESHEET REPORT ===\nDate: ${state.date}\n\n`;
-            log += `FOH Cash Pool: $${document.getElementById('inp-foh-cash').value}\n`;
-            log += `FOH Credit Pool: $${document.getElementById('inp-foh-credit').value}\n`;
-            log += `Kitchen Share Pot: $${document.getElementById('inp-kitchen-val').value}\n`;
+        function copyToGoogleSheets() {
+            let csv = "Name\tIn\tBreak Start\tBreak End\tOut\tHours\tRole\tCash\tCredit\tTotal\n";
+            csv += "FRONT OF HOUSE\n";
+            cachedCalculatedStaff.foh.forEach(e => {
+                csv += `${e.name}\t${e.in}\t${e.breakStart}\t${e.breakEnd}\t${e.out}\t${e.hours.toFixed(2)}\t${e.role}\t${e.cash.toFixed(2)}\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}\n`;
+            });
+            csv += "\nBACK OF HOUSE\n";
+            cachedCalculatedStaff.boh.forEach(e => {
+                csv += `${e.name}\t${e.in}\t${e.breakStart}\t${e.breakEnd}\t${e.out}\t${e.hours.toFixed(2)}\tKitchen\t0.00\t${e.credit.toFixed(2)}\t${e.total.toFixed(2)}\n`;
+            });
             
-            const fallbackArea = document.getElementById('fallback-textarea');
-            const fallbackContainer = document.getElementById('fallback-report-container');
-            fallbackArea.value = log;
-            fallbackContainer.style.display = 'block';
-            fallbackArea.focus();
-            fallbackArea.select();
+            navigator.clipboard.writeText(csv).then(() => alert("Tab-separated text copied! Paste directly into row A1 of Google Sheets.")).catch(() => alert("Failed to auto-copy. Please use Generate Text Report instead."));
         }
 
         window.onload = init;

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinkaow 3 - Tips & Time Sheet</title>
+    <style>
+        /* MAIN APP STYLES */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; font-size: 16px; line-height: 1.5; color: #1f2937; }
+        .container { min-height: 100vh; padding-bottom: 128px; }
+        @media (min-width: 768px) { .container { padding: 32px; } }
+        .main-card { max-width: 1200px; margin: 0 auto; background: white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-radius: 12px; overflow: hidden; }
+                
+        /* Header (ORANGE/CORAL THEME FOR PK3) */
+        .header { background: linear-gradient(to right, #c2410c, #ea580c); color: white; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        @media (min-width: 768px) { .header { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .header h1 { font-size: 24px; font-weight: bold; }
+        .date-picker { display: flex; align-items: center; gap: 8px; }
+        .date-input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 8px; color: white; font-size: 16px; }
+                
+        /* Content */
+        .content { padding: 16px; }
+        @media (min-width: 768px) { .content { padding: 24px; } }
+        .section-spacing { margin-top: 32px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 32px; }
+        @media (min-width: 1024px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+        .section-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+                
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        thead tr { border-bottom: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #6b7280; }
+        thead th { padding: 8px; font-weight: 600; }
+        tbody tr { border-bottom: 1px solid #f3f4f6; }
+        tbody tr:hover { background-color: #f9fafb; }
+        tbody td { padding: 8px; }
+        tfoot tr { border-top: 2px solid #ffedd5; background-color: #fff7ed; font-weight: bold; font-size: 14px; }
+        tfoot td { padding: 8px; }
+                
+        /* Inputs */
+        input[type="text"], input[type="number"], input[type="date"], select { width: 100%; font-size: 16px; }
+        input[type="number"] { text-align: right; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; outline: none; }
+        input[type="text"] { background-color: transparent; border: none; border-bottom: 1px solid #e5e7eb; padding: 8px; outline: none; }
+        input[type="text"]:focus { border-bottom-color: #ea580c; }
+        select { font-size: 14px; background-color: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; cursor: pointer; }
+                
+        /* Financial Table */
+        .financial-table .pool-total-row { background-color: #f0fdf4; font-weight: bold; border-top: 1px solid #bbf7d0; border-bottom: 2px solid #bbf7d0; color: #166534; }
+        .financial-table .separate-row td { color: #6b7280; }
+                
+        /* Breakdown Card */
+        .breakdown-card { background: linear-gradient(to bottom right, #fff7ed, #ffedd5); padding: 16px; border-radius: 8px; }
+        .breakdown-title { font-size: 18px; font-weight: bold; color: #9a3412; margin-bottom: 12px; }
+        .breakdown-content { display: flex; flex-direction: column; gap: 12px; }
+        .breakdown-row { display: flex; justify-content: space-between; align-items: center; }
+        .breakdown-total { font-size: 20px; font-weight: bold; }
+        .divider { height: 1px; background-color: #fed7aa; margin: 8px 0; }
+        .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .breakdown-box { display: flex; flex-direction: column; }
+        .breakdown-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+                
+        /* Pool Grid */
+        .pool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background-color: white; padding: 12px; border-radius: 6px; }
+        .pool-item { display: flex; flex-direction: column; }
+        .pool-label { font-size: 11px; color: #6b7280; text-transform: uppercase; }
+        .pool-input-wrapper { display: flex; align-items: center; font-size: 18px; font-weight: bold; }
+        .pool-input { width: 100%; border: none; background: transparent; font-size: 18px; font-weight: bold; outline: none; }
+        .pool-input.cash { color: #15803d; }
+        .pool-input.credit { color: #ea580c; }
+                
+        /* Department Headers */
+        .dept-header { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #ea580c; }
+        @media (min-width: 768px) { .dept-header { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .dept-title { font-size: 18px; font-weight: bold; color: #9a3412; }
+        .dept-title.boh { color: #334155; }
+                
+        /* Controls Block */
+        .header-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .inline-add-input { background: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 12px; font-size: 14px; width: 160px !important; }
+                
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+        .btn-primary { background-color: #ea580c; color: white; }
+        .btn-orange { background-color: #475569; color: white; }
+        .btn-secondary { background-color: white; color: #4b5563; border: 1px solid #d1d5db; }
+        .btn-success { background-color: #16a34a; color: white; }
+        .btn-print { background-color: #7c3aed; color: white; }
+        .btn-sheets { background-color: #0f9d58; color: white; }
+        .btn-delete { color: #9ca3af; background: none; border: none; cursor: pointer; font-size: 18px; }
+        .btn-delete:hover { color: #ef4444; }
+                
+        /* Quick Select */
+        .quick-select-container { margin-top: 12px; padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .quick-select-btn { padding: 6px 10px; background-color: white; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; cursor: pointer; text-align: left; }
+        .quick-select-btn:hover { background-color: #ea580c; color: white; }
+                
+        /* Footer */
+        .footer { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+        .footer-buttons { display: flex; gap: 8px; justify-content: flex-end; width: 100%; flex-wrap: wrap; }
+                
+        .hours-cell { text-align: center; font-family: monospace; font-size: 14px; }
+        .cash-cell, .credit-cell, .total-cell { text-align: right; font-family: monospace; font-size: 14px; }
+        .total-cell { font-weight: bold; background-color: #fff7ed; }
+        .boh .total-cell { background-color: #f8fafc; }
+                
+        /* Fallback Report Area */
+        #fallback-report-container { width: 100%; display: none; margin-top: 12px; }
+        #fallback-textarea { width: 100%; height: 180px; font-family: monospace; font-size: 13px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f8fafc; }
+                
+        /* --- PRINT LOOK & FEEL OPTIMIZATIONS MATCHING IMAGE (PK3 THEME PRESERVED) --- */
+        @media print {
+            @page { size: letter portrait; margin: 0.4in 0.3in; }
+            html, body { height: auto; background: white !important; color: black !important; font-size: 13px; }
+            .container { padding: 0 !important; margin: 0 !important; min-height: auto !important; padding-bottom: 0 !important; }
+            .main-card { box-shadow: none !important; border: none !important; max-width: 100% !important; }
+            
+            /* Clean Title Header Block using PK3 Orange accents */
+            .header { background: #f8fafc !important; color: black !important; border-bottom: 3px solid #ea580c; padding: 12px 8px !important; }
+            .header h1 { font-size: 22px !important; color: #ea580c !important; }
+            .date-input { color: black !important; background: transparent !important; border: none !important; font-weight: bold; -webkit-appearance: none; appearance: none; padding: 0 !important; font-size: 14px !important; }
+            
+            /* Hide non-printable app items */
+            .btn, .header-controls, .quick-select-container, #fallback-report-container, .footer-buttons, 
+            .section-spacing th:last-child, .section-spacing td:last-child { 
+                display: none !important; 
+            }
+            
+            /* Inputs behave like flat text entries */
+            input, select { border: none !important; background: transparent !important; pointer-events: none !important; -webkit-appearance: none; appearance: none; padding: 0 !important; color: black !important; font-size: 13px !important; }
+            .content { padding: 12px 4px !important; }
+            
+            /* Layout Structure Elements */
+            .grid-2 { gap: 24px !important; grid-template-columns: 1fr 1fr !important; align-items: start !important; }
+            .section-spacing { margin-top: 28px !important; }
+            .section-title { font-size: 15px !important; margin-bottom: 8px !important; color: #9a3412 !important; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+            .dept-header { margin-bottom: 8px !important; padding-bottom: 4px !important; }
+            .dept-title { font-size: 16px !important; }
+            
+            /* Formatted Data Tables */
+            table thead tr { font-size: 11px !important; border-bottom: 2px solid #cbd5e1 !important; }
+            table tbody tr { border-bottom: 1px solid #e5e7eb !important; }
+            table tbody td, table thead th, table tfoot td { padding: 6px 8px !important; font-size: 13px !important; }
+            
+            /* Financial Breakdown Cards */
+            .breakdown-card { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; padding: 12px !important; border-radius: 6px !important; }
+            .breakdown-title { font-size: 15px !important; margin-bottom: 8px !important; }
+            .breakdown-content { gap: 8px !important; }
+            .breakdown-total { font-size: 18px !important; }
+            .breakdown-grid { gap: 12px !important; }
+            .pool-grid { background: white !important; border: 1px solid #cbd5e1 !important; padding: 8px !important; gap: 12px !important; }
+            .pool-input { font-size: 14px !important; font-weight: bold !important; }
+            .divider { margin: 6px 0 !important; background-color: #cbd5e1 !important; }
+            
+            table, tr { page-break-inside: avoid !important; }
+        }
+    </style>
+</head>
+<body onload="init()">
+    <div class="container">
+        <div class="main-card">
+            <div class="header">
+                <h1>Pinkaow 3 - Tips & Time Sheet</h1>
+                <div class="date-picker">
+                    <label style="font-weight:600;">Date:</label>
+                    <input type="date" id="app-date" class="date-input">
+                </div>
+            </div>
+            <div class="content">
+                <div class="grid-2">
+                    <div>
+                        <h3 class="section-title">💲 Tips Input</h3>
+                        <table class="financial-table">
+                            <thead>
+                                <tr><th>Category</th><th style="text-align: right;">Cash</th><th style="text-align: right;">Credit</th></tr>
+                            </thead>
+                            <tbody id="financial-inputs-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="breakdown-card">
+                        <h3 class="breakdown-title">Tip Breakdown</h3>
+                        <div class="breakdown-content">
+                            <div class="breakdown-row">
+                                <span>Total Credit Input</span>
+                                <span class="breakdown-total" id="calc-total-credit">$0.00</span>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="breakdown-grid">
+                                <div class="breakdown-box">
+                                    <label class="breakdown-label">Kitchen 10% Pot Value</label>
+                                    <input type="number" id="calc-kitchen-pot" class="pool-input" style="border-bottom:1px solid #d1d5db;" value="0.00">
+                                </div>
+                                <div class="breakdown-box">
+                                    <label class="breakdown-label">Cashier Payout (90%)</label>
+                                    <input type="number" id="calc-cashier-payout" class="pool-input" style="border-bottom:1px solid #d1d5db;" value="0.00">
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="pool-grid">
+                                <div class="pool-item">
+                                    <span class="pool-label">FOH Cash Pool</span>
+                                    <div class="pool-input-wrapper">$<input type="number" id="pool-foh-cash" class="pool-input cash" value="0.00"></div>
+                                </div>
+                                <div class="pool-item">
+                                    <span class="pool-label">FOH Credit Pool</span>
+                                    <div class="pool-input-wrapper">$<input type="number" id="pool-foh-credit" class="pool-input credit" value="0.00"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-spacing">
+                    <div class="dept-header">
+                        <h3 class="dept-title">👤 Front of House (FOH)</h3>
+                        <div class="header-controls">
+                            <input type="text" id="custom-foh-name" class="inline-add-input" placeholder="New Staff Name...">
+                            <button class="btn btn-primary" onclick="addCustomEmployee('FOH')">Add New</button>
+                            <button class="btn btn-secondary" onclick="toggleQuickSelect('FOH')">📋 Roster List</button>
+                        </div>
+                    </div>
+                    <div id="quick-select-foh" class="quick-select-container" style="display:none;"></div>
+                    <table style="min-width:100%">
+                        <thead>
+                            <tr><th>Name</th><th>In</th><th>Break</th><th>Back</th><th>Out</th><th style="text-align:center;">Hrs</th><th>Role</th><th style="text-align:right;">Cash</th><th style="text-align:right;">Credit</th><th style="text-align:right;">Total</th><th></th></tr>
+                        </thead>
+                        <tbody id="foh-table-body"></tbody>
+                        <tfoot>
+                            <tr style="font-weight:bold; background:#fff7ed;">
+                                <td colSpan="5" style="text-align:right; color:#9a3412;">FOH TOTALS:</td>
+                                <td id="foh-total-hours" style="text-align:center;">0.00</td>
+                                <td colSpan="2"></td>
+                                <td id="foh-total-credit" style="text-align:right;">$0.00</td>
+                                <td id="foh-total-combined" style="text-align:right; color:#9a3412;">$0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="section-spacing">
+                    <div class="dept-header boh">
+                        <h3 class="dept-title boh">🍳 Back of House (BOH)</h3>
+                        <div class="header-controls">
+                            <input type="text" id="custom-boh-name" class="inline-add-input" placeholder="New Staff Name...">
+                            <button class="btn btn-orange" onclick="addCustomEmployee('BOH')">Add New</button>
+                            <button class="btn btn-secondary" onclick="toggleQuickSelect('BOH')">📋 Roster List</button>
+                        </div>
+                    </div>
+                    <div id="quick-select-boh" class="quick-select-container" style="display:none;"></div>
+                    <table style="min-width:100%">
+                        <thead>
+                            <tr><th>Name</th><th>In</th><th>Break</th><th>Back</th><th>Out</th><th style="text-align:center;">Hrs</th><th>Role</th><th style="text-align:right;">Cash</th><th style="text-align:right;">Credit</th><th style="text-align:right;">Total</th><th></th></tr>
+                        </thead>
+                        <tbody id="boh-table-body"></tbody>
+                        <tfoot>
+                            <tr style="font-weight:bold; background:#f1f5f9;">
+                                <td colSpan="5" style="text-align:right; color:#334155;">BOH TOTALS:</td>
+                                <td id="boh-total-hours" style="text-align:center;">0.00</td>
+                                <td colSpan="3"></td>
+                                <td id="boh-total-combined" style="text-align:right; color:#334155;">$0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="footer">
+                    <div id="fallback-report-container">
+                        <label style="font-size: 13px; font-weight: bold; color: #1e2937;">📋 Report Box:</label>
+                        <textarea id="fallback-textarea" readonly></textarea>
+                    </div>
+                    <div class="footer-buttons">
+                        <button class="btn btn-secondary" onclick="resetForm()">Reset Sheet</button>
+                        <button class="btn btn-success" id="btn-copy" onclick="copyReportData()">Generate Text Report</button>
+                        <button class="btn btn-sheets" id="btn-sheets" onclick="copyToGoogleSheets()">📋 Copy for Google Sheets</button>
+                        <button class="btn btn-print" id="print-sheet-btn" onclick="printSheet()">🖨️ Print Sheet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const PREDEFINED_FOH = [
+            "Agustina Liu",
+            "Atiya Kanokvattanawan",
+            "Emily Balanay",
+            "JariyaPhon Surinpao",
+            "Omm ChalermSermsri",
+            "Parichat Practice",
+            "Pawarisa Khotchabunsoem",
+            "Phikul Agsorn",
+            "Photchanicha Khowabut",
+            "Piangjai Peungpakdee",
+            "Saninee Chitamara",
+            "Siriwan Weaver"
+        ].sort();
+
+        const PREDEFINED_BOH = [
+            "Boonyanuch Strunk",
+            "Chavez Pablo",
+            "Edgar Ramirez",
+            "Hector Mayorga",
+            "Narochol Hompan",
+            "Rocio Cabrera",
+            "Soledad Silva",
+            "Vorawut Chaichawalit"
+        ].sort();
+
+        const categories = [
+            { label: 'Lunch', cashId: 'lunchCash', creditId: 'lunchCredit', type: 'pool' },
+            { label: 'Dinner', cashId: 'dinnerCash', creditId: 'dinnerCredit', type: 'pool' },
+            { label: 'Gratuity', cashId: 'gratuityCash', creditId: 'gratuityCredit', type: 'pool' },
+            { label: 'POOL TOTAL', type: 'pool-total' },
+            { label: 'Delivery', cashId: 'deliveryCash', creditId: 'deliveryCredit', type: 'separate' },
+            { label: 'Cashier', cashId: 'cashierCash', creditId: 'cashierCredit', type: 'separate' }
+        ];
+
+        let timeOptionsHTML = '<option value=""></option>';
+        for (let h = 8; h <= 28; h++) {
+            for (let m = 0; m < 60; m += 15) {
+                let displayH = h > 12 ? h - 12 : h;
+                if (h > 24) displayH -= 12;
+                if (displayH === 0) displayH = 12;
+                const period = h >= 12 && h < 24 ? 'PM' : 'AM';
+                const label = `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
+                const minutes = h * 60 + m;
+                timeOptionsHTML += `<option value="${minutes}">${label}</option>`;
+            }
+        }
+
+        let employees = [];
+
+        function init() {
+            document.getElementById('app-date').value = new Date().toISOString().split('T')[0];
+            
+            const tbody = document.getElementById('financial-inputs-body');
+            let html = '';
+            categories.forEach(cat => {
+                if (cat.type === 'pool-total') {
+                    html += `
+                        <tr class="pool-total-row">
+                            <td style="font-weight:bold;">${cat.label}</td>
+                            <td id="total-pool-cash-display" style="text-align:right; padding: 8px; font-family:monospace;">$0.00</td>
+                            <td id="total-pool-credit-display" style="text-align:right; padding: 8px; font-family:monospace;">$0.00</td>
+                        </tr>
+                    `;
+                } else {
+                    html += `
+                        <tr class="${cat.type === 'separate' ? 'separate-row' : ''}">
+                            <td style="font-weight:500;">${cat.label}</td>
+                            <td><input type="number" id="${cat.cashId}" value="0" oninput="calculate()"></td>
+                            <td><input type="number" id="${cat.creditId}" value="0" oninput="calculate()"></td>
+                        </tr>
+                    `;
+                }
+            });
+            tbody.innerHTML = html;
+
+            setupQuickSelect('FOH', PREDEFINED_FOH);
+            setupQuickSelect('BOH', PREDEFINED_BOH);
+            calculate();
+        }
+
+        function setupQuickSelect(dept, list) {
+            const container = document.getElementById(`quick-select-${dept.toLowerCase()}`);
+            let html = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap:6px;">`;
+            list.forEach(name => {
+                html += `<button class="quick-select-btn" onclick="addEmployee('${name}', '${dept}', true)">${name}</button>`;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function toggleQuickSelect(dept) {
+            const div = document.getElementById(`quick-select-${dept.toLowerCase()}`);
+            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addEmployee(name, dept, hideRoster = false) {
+            const emp = {
+                id: Date.now() + Math.random(),
+                name: name,
+                dept: dept,
+                in: '', breakStart: '', breakEnd: '', out: '',
+                role: dept === 'FOH' ? '100%' : 'Kitchen Share'
+            };
+            employees.push(emp);
+            renderEmployees();
+            if (hideRoster) toggleQuickSelect(dept);
+        }
+
+        // Fix to include missing addCustomEmployee logic from snippet
+        function addCustomEmployee(dept) {
+            const inputId = dept === 'FOH' ? 'custom-foh-name' : 'custom-boh-name';
+            const inputEl = document.getElementById(inputId);
+            const name = inputEl.value.trim();
+            if (name) {
+                addEmployee(name, dept, false);
+                inputEl.value = '';
+            }
+        }
+
+        function removeEmployee(id) {
+            employees = employees.filter(e => e.id !== id);
+            renderEmployees();
+        }
+
+        function handleEmpChange(id, field, value) {
+            const emp = employees.find(e => e.id === id);
+            if (emp) {
+                emp[field] = value;
+                renderEmployees();
+            }
+        }
+
+        function renderEmployees() {
+            const fohBody = document.getElementById('foh-table-body');
+            const bohBody = document.getElementById('boh-table-body');
+            let fohHtml = '', bohHtml = '';
+
+            employees.forEach(emp => {
+                const hours = calcHours(emp);
+                const hrsLabel = hours > 0 ? hours.toFixed(2) : '-';
+                
+                let roleSelect = '';
+                if (emp.dept === 'FOH') {
+                    roleSelect = `
+                        <select onchange="handleEmpChange(${emp.id}, 'role', this.value)">
+                            <option value="100%" ${emp.role === '100%' ? 'selected' : ''}>100%</option>
+                            <option value="75%" ${emp.role === '75%' ? 'selected' : ''}>75%</option>
+                            <option value="50%" ${emp.role === '50%' ? 'selected' : ''}>50%</option>
+                            <option value="Cashier" ${emp.role === 'Cashier' ? 'selected' : ''}>Cashier</option>
+                        </select>                    `;
+                } else {
+                    roleSelect = `<span>Kitchen Share</span>`;
+                }
+
+                const tr = `
+                    <tr>
+                        <td><input type="text" value="${emp.name}" onchange="handleEmpChange(${emp.id}, 'name', this.value)"></td>
+                        <td><select onchange="handleEmpChange(${emp.id}, 'in', this.value)">${timeOptionsHTML.replace(`value="${emp.in}"`, `value="${emp.in}" selected`)}</select></td>
+                        <td><select onchange="handleEmpChange(${emp.id}, 'breakStart', this.value)">${timeOptionsHTML.replace(`value="${emp.breakStart}"`, `value="${emp.breakStart}" selected`)}</select></td>
+                        <td><select onchange="handleEmpChange(${emp.id}, 'breakEnd', this.value)">${timeOptionsHTML.replace(`value="${emp.breakEnd}"`, `value="${emp.breakEnd}" selected`)}</select></td>
+                        <td><select onchange="handleEmpChange(${emp.id}, 'out', this.value)">${timeOptionsHTML.replace(`value="${emp.out}"`, `value="${emp.out}" selected`)}</select></td>
+                        <td class="hours-cell">${hrsLabel}</td>
+                        <td>${roleSelect}</td>
+                        <td class="cash-cell" id="cash-${emp.id}">-</td>
+                        <td class="credit-cell" id="credit-${emp.id}">-</td>
+                        <td class="total-cell" id="total-${emp.id}">-</td>
+                        <td><button class="btn-delete" onclick="removeEmployee(${emp.id})">×</button></td>
+                    </tr>
+                `;
+
+                if (emp.dept === 'FOH') fohHtml += tr;
+                else bohHtml += tr;
+            });
+
+            fohBody.innerHTML = fohHtml;
+            bohBody.innerHTML = bohHtml;
+            calculate();
+        }
+
+        function calcHours(emp) {
+            if (!emp.in || !emp.out) return 0;
+            let mins = parseInt(emp.out) - parseInt(emp.in);
+            if (emp.breakStart && emp.breakEnd) {
+                const bMins = parseInt(emp.breakEnd) - parseInt(emp.breakStart);
+                if (bMins > 0) mins -= bMins;
+            }
+            return mins > 0 ? mins / 60 : 0;
+        }
+
+        let currentReportSummary = {};
+
+        function calculate() {
+            const getVal = id => parseFloat(document.getElementById(id)?.value || 0);
+
+            const poolCash = getVal('lunchCash') + getVal('dinnerCash') + getVal('gratuityCash');
+            const poolCredit = getVal('lunchCredit') + getVal('dinnerCredit') + getVal('gratuityCredit');
+            
+            const totalPoolCashEl = document.getElementById('total-pool-cash-display');
+            const totalPoolCreditEl = document.getElementById('total-pool-credit-display');
+            if (totalPoolCashEl) totalPoolCashEl.innerText = `$${poolCash.toFixed(2)}`;
+            if (totalPoolCreditEl) totalPoolCreditEl.innerText = `$${poolCredit.toFixed(2)}`;
+
+            const cashierCredit = getVal('cashierCredit');
+            const totalCredit = poolCredit + getVal('deliveryCredit') + cashierCredit;
+            document.getElementById('calc-total-credit').innerText = `$${totalCredit.toFixed(2)}`;
+
+            const kitchenPot = (poolCredit + cashierCredit) * 0.10;
+            document.getElementById('calc-kitchen-pot').value = kitchenPot.toFixed(2);
+
+            const cashierPayout = cashierCredit * 0.90;
+            document.getElementById('calc-cashier-payout').value = cashierPayout.toFixed(2);
+
+            const fohCashPool = poolCash;
+            const fohCreditPool = poolCredit * 0.90;
+
+            document.getElementById('pool-foh-cash').value = fohCashPool.toFixed(2);
+            document.getElementById('pool-foh-credit').value = fohCreditPool.toFixed(2);
+
+            let fohWeightedHours = 0;
+            let fohTotalHrs = 0;
+            let numCashiers = 0;
+
+            employees.forEach(emp => {
+                emp.calculatedHours = calcHours(emp);
+                if (emp.dept === 'FOH') {
+                    fohTotalHrs += emp.calculatedHours;
+                    if (emp.role === 'Cashier') numCashiers++;
+                    else {
+                        const weight = emp.role === '100%' ? 1.0 : emp.role === '75%' ? 0.75 : 0.5;
+                        fohWeightedHours += (emp.calculatedHours * weight);
+                    }
+                }
+            });
+
+            const cashRate = fohWeightedHours > 0 ? fohCashPool / fohWeightedHours : 0;
+            const creditRate = fohWeightedHours > 0 ? fohCreditPool / fohWeightedHours : 0;
+
+            let bohTotalHrs = 0;
+            employees.forEach(emp => { if (emp.dept === 'BOH') bohTotalHrs += emp.calculatedHours; });
+            const bohRate = bohTotalHrs > 0 ? kitchenPot / bohTotalHrs : 0;
+
+            let totalFohCreditPaid = 0;
+            let totalFohCombinedPaid = 0;
+            let totalBohCombinedPaid = 0;
+
+            employees.forEach(emp => {
+                let cash = 0, credit = 0;
+                if (emp.dept === 'FOH') {
+                    if (emp.role === 'Cashier') {
+                        credit = numCashiers > 0 ? cashierPayout / numCashiers : 0;
+                    } else {
+                        const weight = emp.role === '100%' ? 1.0 : emp.role === '75%' ? 0.75 : 0.5;
+                        cash = emp.calculatedHours * weight * cashRate;
+                        credit = emp.calculatedHours * weight * creditRate;
+                    }
+                    totalFohCreditPaid += credit;
+                    totalFohCombinedPaid += (cash + credit);
+                } else {
+                    credit = emp.calculatedHours * bohRate;
+                    totalBohCombinedPaid += credit;
+                }
+
+                emp.finalCash = cash;
+                emp.finalCredit = credit;
+                emp.finalTotal = cash + credit;
+
+                const cDiv = document.getElementById(`cash-${emp.id}`);
+                const crDiv = document.getElementById(`credit-${emp.id}`);
+                const tDiv = document.getElementById(`total-${emp.id}`);
+                                
+                if (cDiv) cDiv.innerText = cash > 0 ? cash.toFixed(2) : '-';
+                if (crDiv) crDiv.innerText = credit > 0 ? credit.toFixed(2) : '-';
+                if (tDiv) tDiv.innerText = (cash + credit) > 0 ? (cash + credit).toFixed(2) : '-';
+            });
+
+            document.getElementById('foh-total-hours').innerText = fohTotalHrs.toFixed(2);
+            document.getElementById('foh-total-credit').innerText = `$${totalFohCreditPaid.toFixed(2)}`;
+            document.getElementById('foh-total-combined').innerText = `$${totalFohCombinedPaid.toFixed(2)}`;
+
+            document.getElementById('boh-total-hours').innerText = bohTotalHrs.toFixed(2);
+            document.getElementById('boh-total-combined').innerText = `$${totalBohCombinedPaid.toFixed(2)}`;
+
+            currentReportSummary = {
+                date: document.getElementById('app-date').value,
+                totals: { fohHours: fohTotalHrs, fohCredit: totalFohCreditPaid, fohTotal: totalFohCombinedPaid, bohHours: bohTotalHrs, bohTotal: totalBohCombinedPaid }
+            };
+        }
+
+        function copyToGoogleSheets() {
+            let rowData = [];
+            const dateStr = document.getElementById('app-date').value;
+                        
+            rowData.push(`PINKAOW 3 TIPS & TIMESHEET\tDate:\t${dateStr}`);
+            rowData.push("");
+                        
+            rowData.push("TIPS INPUTS\tCash\tCredit");
+            categories.forEach(cat => {
+                if (cat.type !== 'pool-total') {
+                    const cash = document.getElementById(cat.cashId)?.value || "0";
+                    const credit = document.getElementById(cat.creditId)?.value || "0";
+                    rowData.push(`${cat.label}\t${cash}\t${credit}`);
+                }
+            });
+            
+            rowData.push("");
+            rowData.push("FRONT OF HOUSE STAFF\tHours\tRole\tCash Paid\tCredit Paid\tTotal Paid");
+            employees.filter(e => e.dept === 'FOH').forEach(emp => {
+                rowData.push(`${emp.name}\t${emp.calculatedHours.toFixed(2)}\t${emp.role}\t${emp.finalCash.toFixed(2)}\t${emp.finalCredit.toFixed(2)}\t${emp.finalTotal.toFixed(2)}`);
+            });
+
+            rowData.push("");
+            rowData.push("BACK OF HOUSE STAFF\tHours\tRole\tCash Paid\tCredit Paid\tTotal Paid");
+            employees.filter(e => e.dept === 'BOH').forEach(emp => {
+                rowData.push(`${emp.name}\t${emp.calculatedHours.toFixed(2)}\t${emp.role}\t${emp.finalCash.toFixed(2)}\t${emp.finalCredit.toFixed(2)}\t${emp.finalTotal.toFixed(2)}`);
+            });
+
+            const outputText = rowData.join("\n");
+            navigator.clipboard.writeText(outputText).then(() => {
+                alert("📋 Formatted grid data copied! Paste directly (Ctrl+V / Cmd+V) into Google Sheets cell A1.");
+            }).catch(() => {
+                showFallbackReport(outputText);
+            });
+        }
+
+        function copyReportData() {
+            let report = `=== PINKAOW 3 REPORT SUMMARY (${currentReportSummary.date}) ===\n\n`;
+            report += `FOH TOTAL HOURS: ${currentReportSummary.totals.fohHours.toFixed(2)} hrs\n`;
+            report += `FOH COMBINED PAYOUT: $${currentReportSummary.totals.fohTotal.toFixed(2)}\n\n`;
+            report += `BOH TOTAL HOURS: ${currentReportSummary.totals.bohHours.toFixed(2)} hrs\n`;
+            report += `BOH KITCHEN POT PAYOUT: $${currentReportSummary.totals.bohTotal.toFixed(2)}\n\n`;
+            report += `=== STAFF DISTRIBUTION ===\n`;
+            
+            employees.forEach(emp => {
+                report += `[${emp.dept}] ${emp.name}: ${emp.calculatedHours.toFixed(2)} hrs | Total: $${emp.finalTotal.toFixed(2)} (Cash: $${emp.finalCash.toFixed(2)}, Cr: $${emp.finalCredit.toFixed(2)})\n`;
+            });
+
+            navigator.clipboard.writeText(report).then(() => {
+                alert("📝 Summary Report copied to clipboard!");
+            }).catch(() => {
+                showFallbackReport(report);
+            });
+        }
+
+        function showFallbackReport(text) {
+            document.getElementById('fallback-report-container').style.display = 'block';
+            document.getElementById('fallback-textarea').value = text;
+            alert("Clipboard permission denied. Please copy manually from the Report Box visible at the bottom of the page.");
+        }
+
+        function resetForm() {
+            if (confirm("Are you sure you want to completely clear out today's hours and reset all calculations?")) {
+                employees = [];
+                categories.forEach(cat => {
+                    if (cat.type !== 'pool-total') {
+                        const cashEl = document.getElementById(cat.cashId);
+                        const creditEl = document.getElementById(cat.creditId);
+                        if (cashEl) cashEl.value = 0;
+                        if (creditEl) creditEl.value = 0;
+                    }
+                });
+                document.getElementById('fallback-report-container').style.display = 'none';
+                renderEmployees();
+            }
+        }
+
+        function printSheet() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
